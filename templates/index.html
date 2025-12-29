@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdGuard AI - Premium Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0f172a;
+            /* Fallback */
+            overflow-x: hidden;
+        }
+
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #4338ca);
+            background-size: 400% 400%;
+            animation: gradient-x 15s ease infinite;
+        }
+
+        /* Premium Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(129, 140, 248, 0.5);
+        }
+
+        /* Custom Scrollbar for results */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body
+    class="animated-bg min-h-screen text-white flex flex-col items-center justify-center p-4 md:p-8 relative selection:bg-indigo-500 selection:text-white">
+
+    <!-- Ambient Light Effects -->
+    <div
+        class="fixed top-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] pointer-events-none -translate-x-1/2 -translate-y-1/2">
+    </div>
+    <div
+        class="fixed bottom-0 right-0 w-96 h-96 bg-indigo-600/20 rounded-full blur-[128px] pointer-events-none translate-x-1/2 translate-y-1/2">
+    </div>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-6xl z-10">
+
+        <!-- Header -->
+        <header class="text-center mb-10 md:mb-16 animate-float relative">
+            <a href="/"
+                class="absolute top-0 left-0 px-4 py-2 rounded-full glass-panel text-xs font-bold tracking-widest text-indigo-300 hover:bg-white/10 transition-colors flex items-center gap-2">
+                <span>←</span> HOME
+            </a>
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-panel mb-6">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                <span class="text-xs font-medium tracking-widest uppercase text-indigo-300">AI Powered Detection
+                    v2.0</span>
+            </div>
+            <h1
+                class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-indigo-200 text-glow">
+                AdGuard Vision
+            </h1>
+            <p class="text-lg text-indigo-200/60 max-w-2xl mx-auto font-light leading-relaxed">
+                Experience the next generation of content analysis. Instantly distinguish between promotional material
+                and organic content with enterprise-grade precision.
+            </p>
+        </header>
+
+        <!-- Application Interface -->
+        <div
+            class="glass-card rounded-3xl overflow-hidden flex flex-col md:flex-row min-h-[600px] transition-all duration-500">
+
+            <!-- LEFT: Upload Zone -->
+            <section
+                class="w-full md:w-1/2 p-8 md:p-12 border-b md:border-b-0 md:border-r border-white/10 flex flex-col relative bg-gradient-to-br from-white/5 to-transparent">
+
+                <div class="flex-1 flex flex-col justify-center">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*">
+
+                    <!-- Drag & Drop Area -->
+                    <div id="dropZone"
+                        class="group relative w-full h-96 border-2 border-dashed border-indigo-500/30 hover:border-indigo-400 rounded-3xl flex flex-col items-center justify-center cursor-pointer transition-all duration-300 hover:bg-indigo-500/5 backdrop-blur-sm">
+
+                        <!-- Glow Effect -->
+                        <div
+                            class="absolute inset-0 bg-indigo-500/20 blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-500 rounded-3xl">
+                        </div>
+
+                        <!-- Idle State -->
+                        <div id="uploadPrompt"
+                            class="z-10 text-center p-8 transition-transform duration-300 group-hover:scale-105">
+                            <div
+                                class="w-24 h-24 bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-indigo-500/20 transition-all border border-indigo-500/20">
+                                <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3 class="text-2xl font-semibold text-white mb-2">Upload Image</h3>
+                            <p class="text-indigo-200/60 text-sm">Drag & drop or click to browse</p>
+                            <div class="mt-6 flex justify-center gap-3">
+                                <span
+                                    class="px-2 py-1 rounded bg-white/5 text-[10px] font-mono text-indigo-300 border border-white/5">JPG</span>
+                                <span
+                                    class="px-2 py-1 rounded bg-white/5 text-[10px] font-mono text-indigo-300 border border-white/5">PNG</span>
+                            </div>
+                        </div>
+
+                        <!-- Preview State -->
+                        <div id="previewContainer"
+                            class="hidden absolute inset-0 w-full h-full p-6 flex flex-col items-center justify-center z-20">
+                            <div class="relative w-full h-full flex items-center justify-center">
+                                <img id="imagePreview"
+                                    class="max-h-full max-w-full rounded-xl shadow-2xl object-contain" src="">
+                                <button id="removeBtn"
+                                    class="absolute top-0 right-0 p-3 bg-red-500/80 hover:bg-red-500 text-white rounded-xl backdrop-blur-md shadow-lg transition-all transform hover:scale-110 group/btn">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="mt-8">
+                    <button id="analyzeBtn"
+                        class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-indigo-500/25 transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed hidden items-center justify-center gap-3">
+                        <span>Run Analysis</span>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- RIGHT: Analysis Center -->
+            <section class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative bg-black/20">
+
+                <!-- Placeholder / Initial State -->
+                <div id="resultPlaceholder" class="flex flex-col items-center justify-center text-center opacity-40">
+                    <div
+                        class="w-32 h-32 rounded-full border border-white/10 flex items-center justify-center mb-6 relative">
+                        <div class="absolute inset-0 rounded-full border border-white/5 animate-pulse-slow"></div>
+                        <svg class="w-12 h-12 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-medium text-white/60">Ready to Analyze</h3>
+                    <p class="text-sm text-white/30 mt-2 max-w-xs">AI System standby. Upload an image to begin the
+                        detection process.</p>
+                </div>
+
+                <!-- Loader -->
+                <div id="loader"
+                    class="hidden absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm">
+                    <div class="relative w-24 h-24">
+                        <div class="absolute inset-0 border-4 border-indigo-500/30 rounded-full"></div>
+                        <div
+                            class="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin">
+                        </div>
+                    </div>
+                    <p class="mt-6 text-indigo-300 font-mono tracking-widest text-sm animate-pulse">ANALYZING PIXELS...
+                    </p>
+                </div>
+
+                <!-- Result Content -->
+                <div id="resultContent"
+                    class="hidden w-full h-full flex flex-col justify-between animate-[fadeIn_0.5s_ease-out]">
+
+                    <div>
+                        <!-- Result Header Badge -->
+                        <div id="statusBadge"
+                            class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl font-bold text-sm tracking-widest uppercase mb-10 w-full justify-center shadow-lg border">
+                            <!-- Injected JS -->
+                        </div>
+
+                        <!-- Main Score -->
+                        <div class="text-center mb-12 relative">
+                            <p class="text-indigo-200/60 text-xs uppercase tracking-[0.2em] mb-2">Confidence Score</p>
+                            <div class="relative inline-block">
+                                <span id="confValue"
+                                    class="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 tracking-tighter">0%</span>
+                                <div class="absolute -right-6 top-0 text-xl">✨</div>
+                            </div>
+                        </div>
+
+                        <!-- Details Card -->
+                        <div class="glass-panel rounded-2xl p-6 relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500" id="indicatorLine"></div>
+
+                            <h4 class="text-lg font-semibold mb-2">Analysis Report</h4>
+                            <p id="resultDesc" class="text-indigo-100/70 text-sm leading-relaxed mb-6"></p>
+
+                            <!-- Visual Bar -->
+                            <div class="relative h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+                                <div id="progressBar"
+                                    class="absolute top-0 left-0 h-full rounded-full transition-all duration-[1000ms] ease-out w-0">
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-white/30 font-mono uppercase">
+                                <span>Organic</span>
+                                <span>Probability</span>
+                                <span>Promotional</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Meta -->
+                    <div class="mt-auto pt-6 text-center border-t border-white/5">
+                        <p class="text-[10px] text-indigo-300/40 font-mono" id="processingTime">PROCESSED IN 0.00s</p>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+        <footer class="mt-12 text-center text-indigo-200/30 text-xs font-medium">
+            &copy; 2024 Kelompok 7 Machine Learning • AdGuard AI Division
+        </footer>
+
+    </main>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadPrompt = document.getElementById('uploadPrompt');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const removeBtn = document.getElementById('removeBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultPlaceholder = document.getElementById('resultPlaceholder');
+        const resultContent = document.getElementById('resultContent');
+        const loader = document.getElementById('loader');
+
+        let currentFile = null;
+
+        // Interactive Handlers
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            dropZone.classList.add('border-indigo-400', 'bg-indigo-500/10');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('border-indigo-400', 'bg-indigo-500/10');
+        }
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFile(files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+
+            currentFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+
+                uploadPrompt.classList.add('hidden');
+                previewContainer.classList.remove('hidden');
+
+                // Show analyze button with animation
+                analyzeBtn.classList.remove('hidden');
+                analyzeBtn.classList.add('flex');
+
+                resetResult();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentFile = null;
+            fileInput.value = '';
+
+            previewContainer.classList.add('hidden');
+            uploadPrompt.classList.remove('hidden');
+            analyzeBtn.classList.add('hidden');
+            analyzeBtn.classList.remove('flex');
+
+            resetResult();
+        });
+
+        function resetResult() {
+            resultContent.classList.add('hidden');
+            resultPlaceholder.classList.remove('hidden');
+            resultPlaceholder.classList.add('flex');
+        }
+
+        // Logic
+        analyzeBtn.addEventListener('click', async () => {
+            if (!currentFile) return;
+
+            loader.classList.remove('hidden');
+
+            const formData = new FormData();
+            formData.append('file', currentFile);
+
+            try {
+                const response = await fetch('/predict', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                // Artificial delay for premium feel
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    showResult(data);
+                }, 1200);
+
+            } catch (error) {
+                loader.classList.add('hidden');
+                alert('Error: ' + error.message);
+            }
+        });
+
+        function showResult(data) {
+            resultPlaceholder.classList.add('hidden');
+            resultPlaceholder.classList.remove('flex');
+            resultContent.classList.remove('hidden');
+
+            const badge = document.getElementById('statusBadge');
+            const desc = document.getElementById('resultDesc');
+            const bar = document.getElementById('progressBar');
+            const indicator = document.getElementById('indicatorLine');
+            const confVal = document.getElementById('confValue');
+
+            const confPercent = (data.confidence * 100).toFixed(1);
+
+            // Animate Number Counter
+            animateValue(confVal, 0, parseFloat(confPercent), 1000);
+
+            document.getElementById('processingTime').innerText = `PROCESSED IN ${data.processing_time} SECONDS`;
+
+            if (data.is_ad) {
+                // AD DETECTED STYLE
+                badge.className = 'inline-flex items-center gap-3 px-6 py-3 rounded-2xl font-bold text-sm tracking-widest uppercase mb-10 w-full justify-center shadow-lg border bg-rose-500/20 border-rose-500/50 text-rose-200';
+                badge.innerHTML = `<span class="w-3 h-3 bg-rose-500 rounded-full animate-pulse"></span> ADVERTISEMENT DETECTED`;
+
+                desc.innerText = "System has identified high-probability promotional patterns. Contains strong commercial visual cues.";
+
+                bar.className = 'absolute top-0 left-0 h-full rounded-full transition-all duration-[1000ms] ease-out bg-gradient-to-r from-orange-500 to-rose-600';
+                indicator.className = 'absolute top-0 left-0 w-1 h-full bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.5)]';
+            } else {
+                // ORGANIC STYLE
+                badge.className = 'inline-flex items-center gap-3 px-6 py-3 rounded-2xl font-bold text-sm tracking-widest uppercase mb-10 w-full justify-center shadow-lg border bg-emerald-500/20 border-emerald-500/50 text-emerald-200';
+                badge.innerHTML = `<span class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></span> ORGANIC CONTENT`;
+
+                desc.innerText = "Content appears natural with no significant promotional indicators. Safe for non-commercial classification.";
+
+                bar.className = 'absolute top-0 left-0 h-full rounded-full transition-all duration-[1000ms] ease-out bg-gradient-to-r from-teal-400 to-emerald-500';
+                indicator.className = 'absolute top-0 left-0 w-1 h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]';
+            }
+
+            // Trigger Bar Animation
+            setTimeout(() => {
+                bar.style.width = `${confPercent}%`;
+            }, 100);
+        }
+
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = (progress * (end - start) + start).toFixed(1) + "%";
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+    </script>
+</body>
+
+</html>
