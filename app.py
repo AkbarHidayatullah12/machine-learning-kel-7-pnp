@@ -104,7 +104,10 @@ def predict():
 
 
 # =====================
-# LOCAL DEV ONLY
+# LOCAL DEV & PRODUCTION
 # =====================
 if __name__ == "__main__":
-    app.run()
+    # Gunakan PORT dari environment variable, atau default ke 8000 jika tidak ada
+    port = int(os.environ.get("PORT", 8000))
+    # Host harus 0.0.0.0 agar bisa diakses dari luar container
+    app.run(host="0.0.0.0", port=port)
