@@ -14,12 +14,11 @@ MODEL_PATH = "ad_detection_model.keras"
 app = Flask(__name__)
 
 # =====================
-# HEALTH CHECK (WAJIB UNTUK KOYEB)
+# HEALTH CHECK (PENTING UNTUK KOYEB)
 # =====================
 @app.route("/health")
 def health():
     return "ok", 200
-
 
 # =====================
 # LOAD MODEL (GLOBAL)
@@ -31,19 +30,18 @@ try:
         print(f"✅ Model loaded from {MODEL_PATH}")
     else:
         print(f"❌ Model file not found at {MODEL_PATH}")
+        print("Pastikan file .keras sudah di-upload ke GitHub/Koyeb!")
         model = None
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
 
-
 # =====================
-# ROOT ROUTE (AMAN UNTUK PUBLIC)
+# ROOT ROUTE
 # =====================
 @app.route("/")
 def home():
-    return "Ad Detection Service is running"
-
+    return "Ad Detection Service is running. Go to /detector to test."
 
 # =====================
 # UI PAGE
@@ -52,14 +50,13 @@ def home():
 def detector():
     return render_template("index.html")
 
-
 # =====================
 # PREDICTION API
 # =====================
 @app.route("/predict", methods=["POST"])
 def predict():
     if model is None:
-        return jsonify({"error": "Model not loaded"}), 500
+        return jsonify({"error": "Model not loaded. Check server logs."}), 500
 
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
@@ -76,6 +73,7 @@ def predict():
         if image.mode != "RGB":
             image = image.convert("RGB")
 
+        # Resize sesuai input model kamu (224x224)
         image = image.resize((224, 224))
         img_array = img_to_array(image)
         img_array = np.expand_dims(img_array, axis=0) / 255.0
@@ -84,7 +82,7 @@ def predict():
         prediction_score = float(model.predict(img_array, verbose=0)[0][0])
         processing_time = round(time.time() - start_time, 2)
 
-        # Interpret result
+        # Interpret result (Threshold 0.5)
         if prediction_score < 0.5:
             is_ad = True
             confidence = 1.0 - prediction_score
@@ -100,15 +98,16 @@ def predict():
         })
 
     except Exception as e:
+        print(f"Prediction Error: {e}")
         return jsonify({"error": str(e)}), 500
 
-
 # =====================
-# LOCAL DEV & PRODUCTION
+# RUN CONFIGURATION (WAJIB SEPERTI INI)
 # =====================
 if __name__ == "__main__":
-    # Gunakan PORT dari environment variable, atau default ke 8000 jika tidak ada
-    # port = int(os.environ.get("PORT", 8000))
-    # Host harus 0.0.0.0 agar bisa diakses dari luar container
-    # app.run(host="0.0.0.0", port=port)
-    app.run(debug=True)
+    # Koyeb menyediakan PORT lewat environment variable
+    # Jika tidak ada variable PORT, pakai 8000
+    port = int(os.environ.get("PORT", 8000))
+    
+    # Host WAJIB 0.0.0.0 supaya bisa diakses internet
+    app.run(host="0.0.0.0", port=port)
