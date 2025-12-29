@@ -5,24 +5,19 @@ from flask import Flask, render_template, request, jsonify
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import img_to_array
 from PIL import Image
+import threading
 
-# =====================
-# CONFIGURATION
-# =====================
-MODEL_PATH = "ad_detection_model.keras"
+# ==========================================
+# PERBAIKAN LOGIKA 1: PENENTUAN PORT
+# Logika Lama: PORT = 5000 (Koyeb marah karena port dia 8000)
+# Logika Baru: Cek dulu environment variable, kalau tidak ada baru pakai 5000
+# ==========================================
+PORT = int(os.environ.get("PORT", 5000))
+MODEL_PATH = 'ad_detection_model.keras'
 
 app = Flask(__name__)
 
-# =====================
-# HEALTH CHECK (PENTING UNTUK KOYEB)
-# =====================
-@app.route("/health")
-def health():
-    return "ok", 200
-
-# =====================
-# LOAD MODEL (GLOBAL)
-# =====================
+# Load Model (Global)
 print("Loading model...")
 try:
     if os.path.exists(MODEL_PATH):
@@ -30,84 +25,72 @@ try:
         print(f"✅ Model loaded from {MODEL_PATH}")
     else:
         print(f"❌ Model file not found at {MODEL_PATH}")
-        print("Pastikan file .keras sudah di-upload ke GitHub/Koyeb!")
         model = None
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
 
-# =====================
-# ROOT ROUTE
-# =====================
-@app.route("/")
+@app.route('/')
 def home():
-    return "Ad Detection Service is running. Go to /detector to test."
+    return render_template('home.html')
 
-# =====================
-# UI PAGE
-# =====================
-@app.route("/detector")
+@app.route('/detector')
 def detector():
-    return render_template("index.html")
+    return render_template('index.html')
 
-# =====================
-# PREDICTION API
-# =====================
-@app.route("/predict", methods=["POST"])
+@app.route('/predict', methods=['POST'])
 def predict():
-    if model is None:
-        return jsonify({"error": "Model not loaded. Check server logs."}), 500
-
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "Empty filename"}), 400
+    if not model:
+        return jsonify({'error': 'Model not loaded'}), 500
+    
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
 
     try:
         start_time = time.time()
-
-        # Load & preprocess image
+        
+        # Preprocess Image
         image = Image.open(file)
         if image.mode != "RGB":
             image = image.convert("RGB")
-
-        # Resize sesuai input model kamu (224x224)
-        image = image.resize((224, 224))
-        img_array = img_to_array(image)
-        img_array = np.expand_dims(img_array, axis=0) / 255.0
-
+            
+        img_resized = image.resize((224, 224))
+        img_array = img_to_array(img_resized)
+        img_array = np.expand_dims(img_array, axis=0)
+        img_array = img_array / 255.0  # Normalize
+        
         # Predict
         prediction_score = float(model.predict(img_array, verbose=0)[0][0])
         processing_time = round(time.time() - start_time, 2)
-
-        # Interpret result (Threshold 0.5)
+        
+        # Logic: Class 0 is 'iklan', Class 1 is 'noniklan'
+        # Prediction score is probability of 'noniklan' (Class 1)
+        
         if prediction_score < 0.5:
             is_ad = True
             confidence = 1.0 - prediction_score
         else:
             is_ad = False
             confidence = prediction_score
-
+            
         return jsonify({
-            "is_ad": is_ad,
-            "confidence": confidence,
-            "raw_score": prediction_score,
-            "processing_time": processing_time
+            'is_ad': is_ad,
+            'confidence': confidence,
+            'raw_score': prediction_score,
+            'processing_time': processing_time
         })
 
     except Exception as e:
-        print(f"Prediction Error: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
-# =====================
-# RUN CONFIGURATION (WAJIB SEPERTI INI)
-# =====================
-if __name__ == "__main__":
-    # Koyeb menyediakan PORT lewat environment variable
-    # Jika tidak ada variable PORT, pakai 8000
-    port = int(os.environ.get("PORT", 8000))
-    
-    # Host WAJIB 0.0.0.0 supaya bisa diakses internet
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    # ==========================================
+    # PERBAIKAN LOGIKA 2: HOST BINDING
+    # Logika Lama: app.run(...) -> Jalan di localhost (Koyeb tidak bisa masuk)
+    # Logika Baru: host='0.0.0.0' -> Jalan di semua jaringan (Koyeb bisa masuk)
+    # ==========================================
+    app.run(debug=True, host='0.0.0.0', port=PORT, threaded=True)
