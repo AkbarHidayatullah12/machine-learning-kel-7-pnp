@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdGuard AI - Riwayat Analisis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+                            '50%': { 'background-size': '200% 200%', 'background-position': 'right center' },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #0f172a;
+            overflow-x: hidden;
+        }
+
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e293b);
+            background-size: 400% 400%;
+            animation: gradient-x 15s ease infinite;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(129, 140, 248, 0.5);
+        }
+
+        /* Premium Effects & Animations */
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        .animate-shimmer {
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0) 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.6);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-[#0f172a] animated-bg min-h-screen text-white pt-32 flex flex-col">
+
+    {% include 'navbar.html' %}
+
+    <main class="max-w-6xl mx-auto px-6 flex-grow w-full pb-24">
+        <header class="text-center mb-16 animate-float">
+            <h1
+                class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 text-glow">
+                Riwayat Analisis
+            </h1>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">
+                Daftar gambar yang telah Anda analisis sebelumnya. Data tersimpan di browser Anda.
+            </p>
+        </header>
+
+        <!-- Controls -->
+        <div class="flex justify-between items-center mb-8">
+            <span id="historyCount" class="text-indigo-300 text-sm font-medium tracking-widest uppercase">0 Item
+                Tersimpan</span>
+            <button onclick="clearHistory()"
+                class="text-xs font-bold text-rose-400 hover:text-rose-300 transition-colors uppercase tracking-widest flex items-center gap-2 border border-rose-500/30 px-4 py-2 rounded-full hover:bg-rose-500/10">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                    </path>
+                </svg>
+                Hapus Semua
+            </button>
+        </div>
+
+        <!-- History Container -->
+        <div id="historyContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Items will be injected here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center">
+            <div class="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-6">
+                <span class="text-4xl opacity-30">📂</span>
+            </div>
+            <h3 class="text-xl font-medium text-white/50">Belum ada riwayat</h3>
+            <p class="text-slate-500 mt-2 text-sm">Lakukan analisis gambar untuk melihat riwayat di sini.</p>
+            <a href="/detector"
+                class="mt-8 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full font-bold text-sm transition-all">
+                Mulai Analisis
+            </a>
+        </div>
+    </main>
+
+    {% include 'footer.html' %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadHistory);
+
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('adguard_history') || '[]');
+            const container = document.getElementById('historyContainer');
+            const emptyState = document.getElementById('emptyState');
+            const countLabel = document.getElementById('historyCount');
+
+            countLabel.innerText = `${history.length} ITEM TERSIMPAN`;
+
+            if (history.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+            container.innerHTML = '';
+
+            // Sort by newst first
+            history.reverse().forEach((item, index) => {
+                const isAd = item.result === 'ADVERTISEMENT' || item.result === 'IKLAN';
+                const date = new Date(item.timestamp).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+
+                // Style configuration based on result
+                const statusColor = isAd ? 'rose' : 'emerald';
+                const statusText = isAd ? 'IKLAN' : 'ORGANIK';
+                const glowClass = isAd ? 'shadow-rose-900/20' : 'shadow-emerald-900/20';
+
+                const card = `
+                    <div class="glass-card rounded-3xl overflow-hidden group relative">
+                        <!-- Image Cover -->
+                        <div class="h-56 overflow-hidden relative">
+                            <img src="${item.imageData}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-80"></div>
+                            
+                            <!-- Date Badge -->
+                            <div class="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white/70">
+                                ${date}
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="p-6 relative">
+                            <!-- Floating Status Badge -->
+                            <div class="absolute -top-6 left-6 px-4 py-2 rounded-xl bg-gray-900/90 backdrop-blur-xl border border-white/10 shadow-xl flex items-center gap-2">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-${statusColor}-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-${statusColor}-500"></span>
+                                </span>
+                                <span class="text-xs font-bold tracking-widest text-white uppercase">${statusText}</span>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="flex justify-between items-end mb-2">
+                                    <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Tingkat Keyakinan</span>
+                                    <span class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${isAd ? 'from-rose-400 to-orange-400' : 'from-emerald-400 to-teal-400'}">${item.confidence}%</span>
+                                </div>
+                                
+                                <!-- Progress Bar -->
+                                <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5 relative">
+                                    <div class="absolute inset-0 animate-shimmer opacity-10"></div>
+                                    <div class="h-full rounded-full ${isAd ? 'bg-gradient-to-r from-rose-500 to-orange-500' : 'bg-gradient-to-r from-emerald-500 to-teal-500'}" style="width: ${item.confidence}%"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action (Delete) -->
+                            <button onclick="deleteItem(${item.id})" class="mt-6 w-full py-3 rounded-xl bg-white/5 hover:bg-rose-500/20 hover:text-rose-200 border border-white/5 hover:border-rose-500/30 text-xs font-bold uppercase tracking-widest transition-all text-slate-400 group-hover:bg-white/10">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        function deleteItem(id) {
+            if (confirm('Hapus item ini?')) {
+                let history = JSON.parse(localStorage.getItem('adguard_history') || '[]');
+                history = history.filter(item => item.id !== id);
+                localStorage.setItem('adguard_history', JSON.stringify(history));
+                loadHistory();
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Yakin ingin menghapus semua riwayat?')) {
+                localStorage.removeItem('adguard_history');
+                loadHistory();
+            }
+        }
+    </script>
+</body>
+
+</html>
