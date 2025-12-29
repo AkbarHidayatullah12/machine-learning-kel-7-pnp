@@ -38,6 +38,14 @@ def home():
 def detector():
     return render_template('index.html')
 
+@app.route('/history')
+def history():
+    return render_template('history.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if not model:
